@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Awareness Lab</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app" id="app">
+        <header class="topbar">
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true"></span>
+                <div>
+                    <strong>Phishing Email Simulation</strong>
+                    <span class="brand-sub">Awareness Lab</span>
+                </div>
+            </div>
+            <nav class="top-nav" aria-label="Primary">
+                <button class="nav-link" data-view="home">Overview</button>
+                <button class="nav-link" data-view="playbook">Playbook</button>
+                <button class="nav-link" data-view="history">History</button>
+            </nav>
+        </header>
+
+        <main>
+            <!-- Overview -->
+            <section class="view" id="view-home">
+                <div class="hero">
+                    <p class="eyebrow">Controlled training environment</p>
+                    <h1>Test how well you can spot a phishing email.</h1>
+                    <p class="lede">
+                        This is an in-browser simulation. You review a mock inbox, classify each message,
+                        and receive a private awareness report. Nothing is sent. No real mailboxes are contacted.
+                    </p>
+                </div>
+
+                <div class="grid-3">
+                    <article class="card">
+                        <h2>01 — Simulate</h2>
+                        <p>Eight messages mix legitimate mail with common social-engineering patterns: urgency, lookalike domains, executive impersonation, and fake invoices.</p>
+                    </article>
+                    <article class="card">
+                        <h2>02 — Measure</h2>
+                        <p>Your classifications, time-to-decide, and any simulated link clicks are scored locally in this browser. Weak categories are highlighted.</p>
+                    </article>
+                    <article class="card">
+                        <h2>03 — Improve</h2>
+                        <p>Each case includes red flags and a prevention note. The playbook turns those findings into habits you can use at work.</p>
+                    </article>
+                </div>
+
+                <form class="start-panel" id="startForm">
+                    <div class="field">
+                        <label for="participantName">Participant name</label>
+                        <input id="participantName" name="participantName" type="text" autocomplete="name" maxlength="60" placeholder="e.g. Alex Chen">
+                    </div>
+                    <div class="field">
+                        <label for="cohort">Session label <span class="optional">optional</span></label>
+                        <input id="cohort" name="cohort" type="text" maxlength="40" placeholder="e.g. Peer group A">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Begin simulation</button>
+                    <p class="fine-print">Scores stay on this device (local storage). Do not use this exercise to send unsolicited messages.</p>
+                </form>
+
+                <aside class="last-session" id="lastSession" hidden>
+                    <p class="muted">Previous session</p>
+                    <p><span id="prevAccuracy">—</span> accuracy · <span id="prevCount">0</span> attempt(s)</p>
+                </aside>
+            </section>
+
+            <!-- Simulation -->
+            <section class="view" id="view-lab" hidden>
+                <div class="lab-layout">
+                    <aside class="inbox">
+                        <div class="inbox-head">
+                            <div>
+                                <h2>Inbox</h2>
+                                <p class="muted" id="inboxMeta">8 messages</p>
+                            </div>
+                            <span class="badge" id="progressBadge">0 / 8</span>
+                        </div>
+                        <ul class="thread-list" id="threadList"></ul>
+                    </aside>
+
+                    <article class="reader">
+                        <div class="reader-toolbar">
+                            <div>
+                                <p class="muted" id="sessionWho">Participant</p>
+                                <p class="tiny" id="timerLabel">Decision time resets on each message</p>
+                            </div>
+                            <div class="toolbar-actions">
+                                <button type="button" class="btn btn-ghost" id="hintBtn">Hint</button>
+                                <button type="button" class="btn btn-ghost" id="exitBtn">Exit</button>
+                            </div>
+                        </div>
+
+                        <div class="message" id="messagePane">
+                            <header class="msg-header">
+                                <h3 id="msgSubject"></h3>
+                                <dl class="msg-meta">
+                                    <div><dt>From</dt><dd id="msgFrom"></dd></div>
+                                    <div><dt>To</dt><dd>you@northwind.example</dd></div>
+                                    <div><dt>Date</dt><dd id="msgDate"></dd></div>
+                                </dl>
+                            </header>
+                            <div class="msg-body" id="msgBody"></div>
+                        </div>
+
+                        <div class="decide" id="decidePane">
+                            <p class="decide-label">How do you classify this message?</p>
+                            <div class="decide-row">
+                                <button type="button" class="choice choice-phish" id="markPhish">
+                                    <strong>Phishing</strong>
+                                    <span>Report as a social-engineering attempt</span>
+                                </button>
+                                <button type="button" class="choice choice-legit" id="markLegit">
+                                    <strong>Legitimate</strong>
+                                    <span>Treat as a genuine workplace email</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="feedback" id="feedbackPane" hidden>
+                            <div id="feedbackInner"></div>
+                            <button type="button" class="btn btn-primary" id="nextBtn">Continue</button>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Results -->
+            <section class="view" id="view-results" hidden>
+                <p class="eyebrow">Session report</p>
+                <h1>Awareness summary</h1>
+                <p class="lede" id="resultsIntro"></p>
+
+                <div class="score-row">
+                    <div class="score-card">
+                        <p class="muted">Accuracy</p>
+                        <p class="score-num" id="finalAccuracy">0%</p>
+                    </div>
+                    <div class="score-card">
+                        <p class="muted">Correct</p>
+                        <p class="score-num" id="correctCount">0</p>
+                    </div>
+                    <div class="score-card">
+                        <p class="muted">Missed</p>
+                        <p class="score-num" id="incorrectCount">0</p>
+                    </div>
+                    <div class="score-card">
+                        <p class="muted">Avg. decision</p>
+                        <p class="score-num" id="avgTime">0s</p>
+                    </div>
+                    <div class="score-card">
+                        <p class="muted">Bait clicks</p>
+                        <p class="score-num" id="clickCount">0</p>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <article class="card">
+                        <h2>Risk profile</h2>
+                        <p class="risk-level" id="riskLevel"></p>
+                        <p id="riskCopy"></p>
+                        <div id="categoryBreakdown"></div>
+                    </article>
+                    <article class="card">
+                        <h2>Recommended focus</h2>
+                        <ul class="plain-list" id="recommendations"></ul>
+                    </article>
+                </div>
+
+                <div class="actions">
+                    <button type="button" class="btn btn-primary" id="retryBtn">Run again</button>
+                    <button type="button" class="btn btn-ghost" id="exportBtn">Export JSON</button>
+                    <button type="button" class="btn btn-ghost" data-view="playbook">Open playbook</button>
+                </div>
+            </section>
+
+            <!-- Playbook -->
+            <section class="view" id="view-playbook" hidden>
+                <p class="eyebrow">Prevention</p>
+                <h1>A short playbook for safer email habits</h1>
+                <p class="lede">These controls work at the person, process, and platform layers. Use them after the simulation, not instead of it.</p>
+
+                <div class="playbook">
+                    <article>
+                        <h2>Recognize the pattern</h2>
+                        <ul>
+                            <li>Urgency, fear, or secrecy that blocks verification.</li>
+                            <li>Lookalike domains (extra words, swapped letters, unusual TLDs).</li>
+                            <li>Requests for credentials, MFA codes, wire transfers, or gift cards.</li>
+                            <li>Unexpected attachments, especially executables or macro documents.</li>
+                            <li>Display names that do not match the actual address.</li>
+                        </ul>
+                    </article>
+                    <article>
+                        <h2>Verify before you act</h2>
+                        <ul>
+                            <li>Open the official site yourself. Do not follow the email link.</li>
+                            <li>Confirm money or access requests on a known channel (callback to a listed number).</li>
+                            <li>Hover to inspect destinations. Simulated links in Aegis show this skill.</li>
+                            <li>Treat “the CEO said so” as a reason to slow down, not speed up.</li>
+                        </ul>
+                    </article>
+                    <article>
+                        <h2>Harden the environment</h2>
+                        <ul>
+                            <li>Turn on phishing reporting in the mail client and MFA on accounts.</li>
+                            <li>Keep a dual-control process for payments above a set amount.</li>
+                            <li>Filter executable attachments at the gateway.</li>
+                            <li>Run short, repeated awareness drills instead of one annual lecture.</li>
+                        </ul>
+                    </article>
+                </div>
+            </section>
+
+            <!-- History -->
+            <section class="view" id="view-history" hidden>
+                <p class="eyebrow">Local records</p>
+                <h1>Training history</h1>
+                <p class="lede">Sessions stored in this browser only.</p>
+                <div id="historyList" class="history-list"></div>
+            </section>
+        </main>
+
+        <footer class="site-foot">
+            <p>Educational simulation for authorized awareness training. Do not attempt real phishing against people or systems you do not own and have permission to test.</p>
+        </footer>
+    </div>
+
+    <div class="toast" id="toast" hidden role="status"></div>
+    <script src="script.js"></script>
+</body>
+</html>
